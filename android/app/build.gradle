@@ -15,6 +15,7 @@ apply plugin: 'com.android.application'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
+    namespace 'io.github.edufolly.flutterbluetoothserialexample'
     compileSdkVersion 34
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
@@ -37,7 +38,7 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    namespace 'io.github.edufolly.flutterbluetoothserialexample'
+    
     lint {
         disable 'InvalidPackage'
     }

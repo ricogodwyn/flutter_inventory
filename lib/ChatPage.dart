@@ -7,7 +7,6 @@ import 'package:flutter_bluetooth_serial_ble/flutter_bluetooth_serial_ble.dart';
 import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'dart:convert';
 
 class ChatPage extends StatefulWidget {
   final BluetoothDevice server;
@@ -26,10 +25,10 @@ class _Message {
 }
 
 String generateHmac(String secret, String data) {
-  final key = utf8.encode(secret);          // Convert secret key to bytes
-  final bytes = utf8.encode(data);          // Convert data to bytes
-  final hmac = Hmac(sha256, key);           // Create HMAC-SHA256 instance
-  return hmac.convert(bytes).toString();    // Generate and return the hash
+  final key = utf8.encode(secret); // Convert secret key to bytes
+  final bytes = utf8.encode(data); // Convert data to bytes
+  final hmac = Hmac(sha256, key); // Create HMAC-SHA256 instance
+  return hmac.convert(bytes).toString(); // Generate and return the hash
 }
 
 class _ChatPage extends State<ChatPage> {
@@ -61,8 +60,10 @@ class _ChatPage extends State<ChatPage> {
 
   String? selectedDropdown;
 
-  String url = 'http://192.168.111.224:5000/api/item/register-item';
-  String type_url = 'http://192.168.111.224:5000/api/item/get-types';
+  String url =
+      'https://h808khjv-5000.asse.devtunnels.ms/api/item/register-item';
+  String type_url =
+      'https://h808khjv-5000.asse.devtunnels.ms/api/item/get-types';
 
   Map<String, dynamic> dropdownTypes = {};
   bool isLoading = true;
@@ -75,7 +76,7 @@ class _ChatPage extends State<ChatPage> {
     // serialNumberController.addListener(controllerToText);
     BluetoothConnection.toAddress(widget.server.address).then((_connection) {
       print('Connected to the device');
-      
+
       connection = _connection;
       setState(() {
         isConnecting = false;
@@ -101,40 +102,37 @@ class _ChatPage extends State<ChatPage> {
   }
 
   Future<void> getItemTypes() async {
-      try {
-        final apiUrl = "/api/item/get-types";
-        final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-        final requestSign = timestamp + apiUrl;
-        final signature = generateHmac(secretKey, requestSign);
+    try {
+      final apiUrl = "/api/item/get-types";
+      final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+      final requestSign = timestamp + apiUrl;
+      final signature = generateHmac(secretKey, requestSign);
+      print(requestSign);
+      final response = await http.get(Uri.parse(type_url), headers: {
+        'Signature': signature,
+        'Timestamp': timestamp,
+        'Content-Type': 'application/json',
+      });
 
-        final response = await http.get(
-            Uri.parse(type_url),
-            headers: {
-              'Signature': signature,
-              'Timestamp': timestamp,
-              'Content-Type': 'application/json',
-            }
-          );
+      if (response.statusCode >= 200 && response.statusCode <= 299) {
+        Map<String, dynamic> data = json.decode(response.body);
+        // print("DATA: ${data}");
 
-        if (response.statusCode >= 200 && response.statusCode <= 299) {
-            Map<String, dynamic> data = json.decode(response.body);
-            // print("DATA: ${data}");
-
-            setState(() {
-              dropdownTypes = data;
-              isLoading = false;
-            });
-            print("TYPES: ${dropdownTypes}");
-          } else {
-            print('Error: ${response.statusCode}');
-            setState(() {
-              isLoading = false;
-            });
-          }
-      } catch (e) {
-        print('Exception: ${e}');
+        setState(() {
+          dropdownTypes = data;
+          isLoading = false;
+        });
+        print("TYPES: ${dropdownTypes}");
+      } else {
+        print('Error: ${response.statusCode}');
+        setState(() {
+          isLoading = false;
+        });
       }
+    } catch (e) {
+      print('Exception: ${e}');
     }
+  }
 
   @override
   void dispose() {
@@ -156,8 +154,8 @@ class _ChatPage extends State<ChatPage> {
     final serverName = widget.server.name ?? "Unknown";
 
     List<Map<String, dynamic>> dropItems = dropdownTypes["types"] != null
-    ? List<Map<String, dynamic>>.from(dropdownTypes["types"])
-    : [];
+        ? List<Map<String, dynamic>>.from(dropdownTypes["types"])
+        : [];
 
     return Scaffold(
       appBar: AppBar(
@@ -194,31 +192,34 @@ class _ChatPage extends State<ChatPage> {
                   Text("Item: ${selectedDropdown ?? 'No item selected'}")
                 ], // Display the msg variabl
               ),
-        
+
               SizedBox(
                 height: 15.0,
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: isLoading ? Center(child: CircularProgressIndicator()) : DropdownButton<String>(
-                    value: selectedDropdown,
-                    hint: Text("Select an Item"),
-                    isExpanded: true,
-                    items: dropItems.map<DropdownMenuItem<String>>((dropItem) {
-                      return DropdownMenuItem<String>(
-                        value: dropItem['item_type'], 
-                        child: Text(dropItem['item_type']),
-                      );
-                    }).toList(), 
-                    onChanged: (value) {
-                      setState(() {
-                        selectedDropdown = value;
-                      });
-                      print("CHOSEN: ${selectedDropdown}");
-                    },
-                  ),
+                child: isLoading
+                    ? Center(child: CircularProgressIndicator())
+                    : DropdownButton<String>(
+                        value: selectedDropdown,
+                        hint: Text("Select an Item"),
+                        isExpanded: true,
+                        items:
+                            dropItems.map<DropdownMenuItem<String>>((dropItem) {
+                          return DropdownMenuItem<String>(
+                            value: dropItem['item_type'],
+                            child: Text(dropItem['item_type']),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedDropdown = value;
+                          });
+                          print("CHOSEN: ${selectedDropdown}");
+                        },
+                      ),
               ),
-        
+
               // SizedBox(
               //   height: 10.0,
               // ),
@@ -235,7 +236,7 @@ class _ChatPage extends State<ChatPage> {
               //         )),
               //   ),
               // ),
-        
+
               SizedBox(
                 height: 10.0,
               ),
@@ -252,7 +253,7 @@ class _ChatPage extends State<ChatPage> {
                       )),
                 ),
               ),
-        
+
               SizedBox(
                 height: 15.0,
               ),
@@ -269,7 +270,7 @@ class _ChatPage extends State<ChatPage> {
                       )),
                 ),
               ),
-        
+
               SizedBox(
                 height: 15.0,
               ),
@@ -278,8 +279,10 @@ class _ChatPage extends State<ChatPage> {
                 children: [
                   ElevatedButton(
                       onPressed: () {
-
-                        if (qr_code.isEmpty || epc_tag.isEmpty || quantityController.text.isEmpty || batchController.text.isEmpty) {
+                        if (qr_code.isEmpty ||
+                            epc_tag.isEmpty ||
+                            quantityController.text.isEmpty ||
+                            batchController.text.isEmpty) {
                           Fluttertoast.showToast(
                             msg: "Client Error: All fields must be filled.",
                             toastLength: Toast.LENGTH_SHORT,
@@ -302,7 +305,7 @@ class _ChatPage extends State<ChatPage> {
                             "batch": int.parse(batchController.text)
                           };
                           sendData(url, data);
-                        } catch(error) {
+                        } catch (error) {
                           Fluttertoast.showToast(
                             msg: "Client Error: Invalid data or data type",
                             toastLength: Toast.LENGTH_SHORT,
@@ -319,23 +322,20 @@ class _ChatPage extends State<ChatPage> {
                           epc_tag = '';
                           qr_code = '';
                         });
-
                       },
-                      child: Text("Send data")
-                    ),
+                      child: Text("Send data")),
                 ],
               ),
               const SizedBox(height: 10),
               ElevatedButton(
-                      onPressed: () {
-                        if (isConnected) {
-                          mode = !mode;
-                          sendMessageCondition(mode);
-                          print(mode);
-                        }
-                      },
-                      child: Text("Change Mode")
-              ),
+                  onPressed: () {
+                    if (isConnected) {
+                      mode = !mode;
+                      sendMessageCondition(mode);
+                      print(mode);
+                    }
+                  },
+                  child: Text("Change Mode")),
               Text(mode ? "RFID Mode" : "QR Mode"),
             ],
           ),
@@ -425,7 +425,6 @@ class _ChatPage extends State<ChatPage> {
         await connection!.output.allSent;
 
         setState(() {});
-
       } catch (e) {
         // Ignore error, but notify state
         print("ERROR: $e");
@@ -458,17 +457,21 @@ class _ChatPage extends State<ChatPage> {
     }
 
     String dataString = String.fromCharCodes(buffer);
-    // print("DATA STRING: $dataString");
+    print("DATA STRING: $dataString");
 
-    if (mode == true) {
-      setState(() {
-        epc_tag = dataString.trim();
-      });
-    } else if (mode == false) {
-      setState(() {
-        qr_code = dataString.trim();
-      });
+    if (mode) {
+      if (epc_tag != dataString) {
+        setState(() {
+          epc_tag = dataString;
+        });
+      }
+    } else {
+      if (qr_code != dataString) {
+        setState(() {
+          qr_code = dataString;
+          print(qr_code);
+        });
+      }
     }
   }
 }
-
