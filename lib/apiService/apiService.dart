@@ -4,9 +4,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-const baseUrl = "https://h808khjv-5000.asse.devtunnels.ms/api/item";
-
 class ApiService {
+  static const baseUrl =
+      "https://web.moengoet-inventory.my.id/api/item"; //change this if problematic
   static final String secretKey = dotenv.env["SECRET_KEY"] ?? 'Not Found';
 
   static String generateHmac(String secret, String data) {

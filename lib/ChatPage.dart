@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:flutter_bluetooth_serial_example/apiService/apiService.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial_ble/flutter_bluetooth_serial_ble.dart';
@@ -46,7 +47,7 @@ class _ChatPage extends State<ChatPage> {
   bool get isConnected => (connection?.isConnected ?? false);
 
   bool mode = true;
-
+  bool canReceived = true;
   String epc_tag = '';
   String qr_code = '';
 
@@ -61,9 +62,9 @@ class _ChatPage extends State<ChatPage> {
   String? selectedDropdown;
 
   String url =
-      'https://h808khjv-5000.asse.devtunnels.ms/api/item/register-item';
+      ApiService.baseUrl + '/register-item'; //change this if problematic
   String type_url =
-      'https://h808khjv-5000.asse.devtunnels.ms/api/item/get-types';
+      ApiService.baseUrl + '/get-types'; //change this if problematic
 
   Map<String, dynamic> dropdownTypes = {};
   bool isLoading = true;
@@ -76,7 +77,6 @@ class _ChatPage extends State<ChatPage> {
     // serialNumberController.addListener(controllerToText);
     BluetoothConnection.toAddress(widget.server.address).then((_connection) {
       print('Connected to the device');
-
       connection = _connection;
       setState(() {
         isConnecting = false;
@@ -93,6 +93,8 @@ class _ChatPage extends State<ChatPage> {
           setState(() {});
         }
       });
+      _sendMessage("r"); //if problematic change this
+      print("connected!");
     }).catchError((error) {
       print('Cannot connect, exception occurred');
       print(error);
@@ -423,7 +425,7 @@ class _ChatPage extends State<ChatPage> {
       try {
         connection!.output.add(Uint8List.fromList(utf8.encode(text)));
         await connection!.output.allSent;
-
+        print("send data success!");
         setState(() {});
       } catch (e) {
         // Ignore error, but notify state
@@ -460,13 +462,13 @@ class _ChatPage extends State<ChatPage> {
     print("DATA STRING: $dataString");
 
     if (mode) {
-      if (epc_tag != dataString) {
+      if (qr_code != dataString && epc_tag != dataString) {
         setState(() {
           epc_tag = dataString;
         });
       }
     } else {
-      if (qr_code != dataString) {
+      if (qr_code != dataString && epc_tag != dataString) {
         setState(() {
           qr_code = dataString;
           print(qr_code);

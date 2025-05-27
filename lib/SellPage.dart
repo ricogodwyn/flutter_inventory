@@ -56,7 +56,7 @@ class _SellpageState extends State<Sellpage> {
 
   // String url_single = 'https://2876-118-99-106-112.ngrok-free.app/api/item/item-sold/';
   String url_bulk =
-      'https://h808khjv-5000.asse.devtunnels.ms/api/item/ship-items';
+      ApiService.baseUrl + '/ship-items'; //if problematic change this
   final TextEditingController searchController = TextEditingController();
   int? selectedInvoiceId;
 
@@ -88,7 +88,7 @@ class _SellpageState extends State<Sellpage> {
         }
       });
 
-      _sendMessage("R");
+      _sendMessage("r"); //if problematic change this
     }).catchError((error) {
       print('Cannot connect, exception occurred');
       print(error);
@@ -434,7 +434,7 @@ class _SellpageState extends State<Sellpage> {
       try {
         connection!.output.add(Uint8List.fromList(utf8.encode(text)));
         await connection!.output.allSent;
-
+        print("send data success!");
         setState(() {});
       } catch (e) {
         // Ignore error, but notify state
