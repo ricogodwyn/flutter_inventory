@@ -242,19 +242,19 @@ class _ChatPage extends State<ChatPage> {
               SizedBox(
                 height: 10.0,
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: TextField(
-                  controller: quantityController,
-                  decoration: InputDecoration(
-                      label: Text("Quantity"),
-                      border: OutlineInputBorder(),
-                      hintText: "Input Quantity",
-                      hintStyle: TextStyle(
-                        color: Colors.grey,
-                      )),
-                ),
-              ),
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(horizontal: 10),
+              //   child: TextField(
+              //     controller: quantityController,
+              //     decoration: InputDecoration(
+              //         label: Text("Quantity"),
+              //         border: OutlineInputBorder(),
+              //         hintText: "Input Quantity",
+              //         hintStyle: TextStyle(
+              //           color: Colors.grey,
+              //         )),
+              //   ),
+              // ),
 
               SizedBox(
                 height: 15.0,
@@ -283,7 +283,7 @@ class _ChatPage extends State<ChatPage> {
                       onPressed: () {
                         if (qr_code.isEmpty ||
                             epc_tag.isEmpty ||
-                            quantityController.text.isEmpty ||
+                            // quantityController.text.isEmpty ||
                             batchController.text.isEmpty) {
                           Fluttertoast.showToast(
                             msg: "Client Error: All fields must be filled.",
@@ -303,7 +303,7 @@ class _ChatPage extends State<ChatPage> {
                             "rfid_tag": epc_tag,
                             "item_name": "buffer",
                             "type_ref": selectedDropdown,
-                            "quantity": int.parse(quantityController.text),
+                            "quantity": 1,
                             "batch": int.parse(batchController.text)
                           };
                           sendData(url, data);
@@ -468,9 +468,11 @@ class _ChatPage extends State<ChatPage> {
         });
       }
     } else {
-      if (qr_code != dataString && epc_tag != dataString) {
+      if (dataString.trim() != "" &&
+          dataString.trim() != qr_code &&
+          dataString != epc_tag) {
         setState(() {
-          qr_code = dataString;
+          qr_code = dataString.trim();
           print(qr_code);
         });
       }
